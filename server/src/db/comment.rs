@@ -4,11 +4,7 @@ use uuid::Uuid;
 use crate::error::Result;
 use crate::models::comment::{Comment, CommentRow};
 
-pub async fn user_comments(
-    pool: &PgPool,
-    media_id: Uuid,
-    page: i16,
-) -> Result<Vec<Comment>> {
+pub async fn user_comments(pool: &PgPool, media_id: Uuid, page: i16) -> Result<Vec<Comment>> {
     let result = query_as::<_, CommentRow>(
         r#"
         SELECT
@@ -27,23 +23,19 @@ pub async fn user_comments(
         ORDER BY c.created_at DESC
         OFFSET $2
         LIMIT 100
-        "#
+        "#,
     )
-        .bind(media_id)
-        .bind((page - 1) * 100)
-        .fetch_all(pool)
-        .await?
-        .into_iter()
-        .map(Into::into)
-        .collect();
+    .bind(media_id)
+    .bind((page - 1) * 100)
+    .fetch_all(pool)
+    .await?
+    .into_iter()
+    .map(Into::into)
+    .collect();
     Ok(result)
 }
 
-pub async fn media_comments(
-    pool: &PgPool,
-    media_id: Uuid,
-    page: i16,
-) -> Result<Vec<Comment>> {
+pub async fn media_comments(pool: &PgPool, media_id: Uuid, page: i16) -> Result<Vec<Comment>> {
     let result = query_as::<_, CommentRow>(
         r#"
         SELECT
@@ -62,23 +54,19 @@ pub async fn media_comments(
         ORDER BY c.created_at DESC
         OFFSET $2
         LIMIT 100
-        "#
+        "#,
     )
-        .bind(media_id)
-        .bind((page - 1) * 100)
-        .fetch_all(pool)
-        .await?
-        .into_iter()
-        .map(Into::into)
-        .collect();
+    .bind(media_id)
+    .bind((page - 1) * 100)
+    .fetch_all(pool)
+    .await?
+    .into_iter()
+    .map(Into::into)
+    .collect();
     Ok(result)
 }
 
-pub async fn list(
-    pool: &PgPool,
-    media_id: Uuid,
-    page: i16,
-) -> Result<Vec<Comment>> {
+pub async fn list(pool: &PgPool, media_id: Uuid, page: i16) -> Result<Vec<Comment>> {
     let result = query_as::<_, CommentRow>(
         r#"
         SELECT
@@ -97,24 +85,19 @@ pub async fn list(
         ORDER BY c.created_at DESC
         OFFSET $2
         LIMIT 100
-        "#
+        "#,
     )
-        .bind(media_id)
-        .bind((page - 1) * 100)
-        .fetch_all(pool)
-        .await?
-        .into_iter()
-        .map(Into::into)
-        .collect();
+    .bind(media_id)
+    .bind((page - 1) * 100)
+    .fetch_all(pool)
+    .await?
+    .into_iter()
+    .map(Into::into)
+    .collect();
     Ok(result)
 }
 
-pub async fn create(
-    pool: &PgPool,
-    user_id: Uuid,
-    media_id: Uuid,
-    text: String,
-) -> Result<Comment> {
+pub async fn create(pool: &PgPool, user_id: Uuid, media_id: Uuid, text: String) -> Result<Comment> {
     let result = query_as::<_, CommentRow>(
         r#"
         WITH updated_media AS (
@@ -138,21 +121,16 @@ pub async fn create(
         INNER JOIN "user" u ON u.user_id = ic.from_user_id
         "#,
     )
-        .bind(user_id)
-        .bind(media_id)
-        .bind(text)
-        .fetch_one(pool)
-        .await?
-        .into();
+    .bind(user_id)
+    .bind(media_id)
+    .bind(text)
+    .fetch_one(pool)
+    .await?
+    .into();
     Ok(result)
 }
 
-pub async fn remove(
-    pool: &PgPool,
-    user_id: Uuid,
-    media_id: Uuid,
-    comment_id: Uuid,
-) -> Result<()> {
+pub async fn remove(pool: &PgPool, user_id: Uuid, media_id: Uuid, comment_id: Uuid) -> Result<()> {
     query!(
         r#"
         WITH soft_deleted AS (
@@ -177,7 +155,7 @@ pub async fn remove(
         media_id,
         comment_id
     )
-        .fetch_one(pool)
-        .await?;
+    .fetch_one(pool)
+    .await?;
     Ok(())
 }
