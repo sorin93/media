@@ -1,5 +1,11 @@
-use axum::{extract::{Query, Path, State}, http::StatusCode, Json, middleware::from_fn_with_state, Router, routing::{delete, get, post, put}};
-use serde_json::{json, Value};
+use axum::{
+    Json, Router,
+    extract::{Path, Query, State},
+    http::StatusCode,
+    middleware::from_fn_with_state,
+    routing::{delete, get, post, put},
+};
+use serde_json::{Value, json};
 use uuid::Uuid;
 
 use crate::api::middleware;
@@ -7,13 +13,16 @@ use crate::error::Result;
 use crate::models::auth::{Authenticated, OptionalAuth};
 use crate::models::user::{RegisterRequest, UpdatePasswordRequest, User};
 use crate::models::util::Pagination;
+use crate::services::util::{
+    validate_country, validate_email, validate_number, validate_password, validate_string,
+    validate_string_opt,
+};
 use crate::services::{comment, like, media, user};
-use crate::services::util::{validate_country, validate_email, validate_number, validate_password, validate_string, validate_string_opt};
 use crate::state::AppState;
 
 pub fn routes() -> Router<AppState> {
     Router::new()
-        .route("/", get(home))  // // todo: optional auth demo remove
+        .route("/", get(home)) // // todo: optional auth demo remove
         .route("/users", post(create))
         .route_layer(from_fn_with_state(AppState::clone, middleware::guest_only))
         .route("/users/me", get(find))
@@ -25,10 +34,7 @@ pub fn routes() -> Router<AppState> {
         .route("/users/{user_id}/likes", get(user_likes))
 }
 
-async fn find(
-    State(state): State<AppState>,
-    auth: Authenticated,
-) -> Result<Json<User>> {
+async fn find(State(state): State<AppState>, auth: Authenticated) -> Result<Json<User>> {
     let user = user::find_account_by_id(&state, auth.user_id).await?;
     Ok(Json(user.into()))
 }
@@ -48,10 +54,13 @@ async fn create(
         validate_country(&mut input.country)?;
         // todo: validate birth-date
         let (user, tokens) = user::complete_registration(&state, input).await?;
-        Ok((StatusCode::CREATED, Json(json!({
-            "user": User::from(user),
-            "tokens": tokens,
-        }))))
+        Ok((
+            StatusCode::CREATED,
+            Json(json!({
+                "user": User::from(user),
+                "tokens": tokens,
+            })),
+        ))
     }
 }
 
@@ -62,7 +71,13 @@ async fn update_password(
 ) -> Result<Json<User>> {
     validate_password(&mut input.current_password)?;
     validate_password(&mut input.new_password)?;
-    let user = user::update_password(&state, auth.user_id, &input.current_password, &input.new_password).await?;
+    let user = user::update_password(
+        &state,
+        auth.user_id,
+        &input.current_password,
+        &input.new_password,
+    )
+    .await?;
     Ok(Json(user.into()))
 }
 

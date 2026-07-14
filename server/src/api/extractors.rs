@@ -1,6 +1,14 @@
-use axum::{extract::FromRequestParts, http::{header::AUTHORIZATION, request::Parts}};
+use axum::{
+    extract::FromRequestParts,
+    http::{header::AUTHORIZATION, request::Parts},
+};
 
-use crate::{error::Error, models::auth::{Authenticated, OptionalAuth}, services, state::AppState};
+use crate::{
+    error::Error,
+    models::auth::{Authenticated, OptionalAuth},
+    services,
+    state::AppState,
+};
 
 impl<S> FromRequestParts<S> for Authenticated
 where
@@ -9,10 +17,15 @@ where
     type Rejection = Error;
 
     async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
-        let app_state = parts.extensions.get::<AppState>().cloned()
+        let app_state = parts
+            .extensions
+            .get::<AppState>()
+            .cloned()
             .ok_or_else(|| Error::Internal("AppState missing".into()))?;
 
-        let token = parts.headers.get(AUTHORIZATION)
+        let token = parts
+            .headers
+            .get(AUTHORIZATION)
             .and_then(|v| v.to_str().ok())
             .and_then(|h| h.strip_prefix("Bearer "))
             .ok_or_else(|| Error::Unauthorized("Missing auth header".into()))?;

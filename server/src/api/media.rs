@@ -1,14 +1,21 @@
-use axum::{extract::{Query, Path, State}, http::StatusCode, Json, Router, routing::{delete, get, patch, post}};
+use axum::{
+    Json, Router,
+    extract::{Path, Query, State},
+    http::StatusCode,
+    routing::{delete, get, patch, post},
+};
 use pgvector::Vector;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use uuid::Uuid;
 
 use crate::error::{Error, Result};
 use crate::models::auth::{Authenticated, OptionalAuth};
-use crate::models::media::{ActivateMedia, CreateMedia, MediaQuery, MediaType::Image, Search2, UpdateMedia};
+use crate::models::media::{
+    ActivateMedia, CreateMedia, MediaQuery, MediaType::Image, Search2, UpdateMedia,
+};
 use crate::models::util::Pagination;
-use crate::services::{comment, like, media};
 use crate::services::util::{validate_number, validate_number_opt, validate_string_opt};
+use crate::services::{comment, like, media};
 use crate::state::AppState;
 
 pub fn routes() -> Router<AppState> {
@@ -138,8 +145,18 @@ async fn create(
     if input.r#type != Image {
         return Err(Error::BadRequest("Invalid media type".into()));
     }
-    let media_id = media::create(&state, auth.user_id, input.parent_media_id, input.r#type, input.caption).await?;
-    Ok((StatusCode::CREATED, Json(json!({ "media": { "media_id": media_id }}))))
+    let media_id = media::create(
+        &state,
+        auth.user_id,
+        input.parent_media_id,
+        input.r#type,
+        input.caption,
+    )
+    .await?;
+    Ok((
+        StatusCode::CREATED,
+        Json(json!({ "media": { "media_id": media_id }})),
+    ))
 }
 
 async fn activate(
@@ -151,7 +168,14 @@ async fn activate(
     if input.embedding.len() != 3072 {
         return Err(Error::BadRequest("Invalid embedding".into()));
     }
-    let media = media::activate(&state, auth.user_id, media_id, Vector::from(input.embedding), input.blurhash).await?;
+    let media = media::activate(
+        &state,
+        auth.user_id,
+        media_id,
+        Vector::from(input.embedding),
+        input.blurhash,
+    )
+    .await?;
     Ok(Json(json!({ "media": media })))
 }
 

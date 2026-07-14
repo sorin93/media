@@ -1,9 +1,9 @@
 use axum::{
     body::Body,
-    http::{header, HeaderValue, Method, Request},
+    extract::State,
+    http::{HeaderValue, Method, Request, header},
     middleware::Next,
     response::{IntoResponse, Response},
-    extract::State,
 };
 use tower_http::cors::{AllowOrigin, CorsLayer};
 
@@ -21,12 +21,18 @@ pub async fn inject_state(
 }
 
 pub async fn guest_only(request: Request<Body>, next: Next) -> axum::response::Response {
-    let is_auth = request.extensions().get::<AppState>().and_then(|state| {
-        request.headers().get(header::AUTHORIZATION)
-            .and_then(|v| v.to_str().ok())
-            .and_then(|h| h.strip_prefix("Bearer "))
-            .map(|t| services::auth::validate_access_token(state, t).is_ok())
-    }).unwrap_or(false);
+    let is_auth = request
+        .extensions()
+        .get::<AppState>()
+        .and_then(|state| {
+            request
+                .headers()
+                .get(header::AUTHORIZATION)
+                .and_then(|v| v.to_str().ok())
+                .and_then(|h| h.strip_prefix("Bearer "))
+                .map(|t| services::auth::validate_access_token(state, t).is_ok())
+        })
+        .unwrap_or(false);
 
     if is_auth {
         return Error::BadRequest("Already authenticated".into()).into_response();
@@ -85,10 +91,7 @@ pub async fn security_headers(req: Request<Body>, next: Next) -> Response {
     );
 
     // X-Frame-Options: Prevent clickjacking (replaced by CSP frame-ancestors in modern browsers, but good backup)
-    headers.insert(
-        header::X_FRAME_OPTIONS,
-        HeaderValue::from_static("DENY"),
-    );
+    headers.insert(header::X_FRAME_OPTIONS, HeaderValue::from_static("DENY"));
 
     // XSS Protection: Block rendering if XSS detected (Legacy, but still used)
     headers.insert(
