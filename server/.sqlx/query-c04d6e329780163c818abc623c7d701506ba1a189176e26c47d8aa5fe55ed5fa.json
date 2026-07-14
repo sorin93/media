@@ -1,0 +1,24 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        WITH deleted AS (\n            DELETE FROM follow\n            WHERE from_user_id = $1\n              AND to_user_id = $2\n            RETURNING from_user_id\n        ),\n        following_updated AS (\n            UPDATE \"user\"\n            SET following_count = GREATEST(following_count - 1, 0)\n            WHERE user_id = $1\n              AND status = 'active'\n              AND EXISTS (SELECT 1 FROM deleted)\n        ),\n        followed_updated AS (\n            UPDATE \"user\"\n            SET followed_count = GREATEST(followed_count - 1, 0)\n            WHERE user_id = $2\n              AND status = 'active'\n              AND EXISTS (SELECT 1 FROM deleted)\n        )\n        SELECT 1 as id FROM deleted\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "c04d6e329780163c818abc623c7d701506ba1a189176e26c47d8aa5fe55ed5fa"
+}

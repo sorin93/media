@@ -1,0 +1,24 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        WITH updated_media AS (\n            UPDATE media\n            SET status = 'deleted', updated_at = now(), embedding = NULL, blurhash = NULL\n            WHERE user_id = $1 AND media_id = $2 AND status = 'active'\n            RETURNING 1\n        ),\n        updated_user AS (\n            UPDATE \"user\"\n            SET \n                updated_at = now(),\n                media_count = GREATEST(media_count - 1, 0),\n                media_id = CASE WHEN media_id = $2 THEN NULL ELSE media_id END\n            WHERE user_id = $1 \n              AND status = 'active'\n              AND EXISTS (SELECT 1 FROM updated_media)\n            RETURNING 1\n        )\n        SELECT 1 as id FROM updated_media\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "f856b9348cc2c14f66af5b5248e19b78c304628e575c7e5201f9167ef960f828"
+}

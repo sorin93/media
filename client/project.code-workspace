@@ -1,0 +1,53 @@
+{
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    "editor.rulers": [
+      120
+    ],
+    "telemetry.telemetryLevel": "off",
+    "telemetry.feedback.enabled": false,
+    "json.schemaDownload.enable": false,
+    "editor.formatOnSave": false,
+    "window.zoomLevel": 0.75,
+    "svelte.ask-to-enable-ts-plugin": false,
+    "[js][svelte][css][html][csv]": {
+      "editor.tabSize": 2
+    },
+    "[json][rust][sql]": {
+      "editor.tabSize": 4
+    },
+    "files.exclude": {
+      "node_modules": true,
+      "dist": true,
+      "public": true,
+      "target": true,
+      ".agents": true,
+      ".vscode": true,
+      ".git": true,
+      ".gitignore": true,
+      "Cargo.lock": true,
+      "Cargo.toml": true,
+      "google-cloud.json": true,
+      "index.html": true,
+      "jsconfig.json": true,
+      "llms.txt": true,
+      "package.json": true,
+      "package-lock.json": true,
+      "project.code-workspace": true,
+      "svelte.config.js": true,
+      "vite.config.js": true
+    },
+    "terminal.integrated.profiles.linux": {
+      "toolbox-work": {
+        "path": "/usr/bin/toolbox",
+        "args": ["enter", "work"],
+        "icon": "terminal-bash"
+      }
+    },
+    "terminal.integrated.defaultProfile.linux": "toolbox-work"
+  }
+}

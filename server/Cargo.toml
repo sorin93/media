@@ -1,0 +1,55 @@
+[package]
+authors = ["Sorin Facaoaru"]
+edition = "2024"
+name = "media"
+publish = false
+version = "1.0.0"
+
+[dependencies]
+argon2 = "*"
+async-stream = "*"
+axum = { version = "*", features = ["macros", "multipart"] }
+base64 = "*"
+dotenv = "*"
+futures = "*"
+jsonwebtoken = { version = "*", features = ["rust_crypto"] }
+pgvector = { version = "*", features = ["serde", "sqlx"] }
+rand = "*"
+reqwest = { version = "*", features = ["json", "stream"] }
+rust-s3 = "*"
+serde = { version = "*", features = ["derive"] }
+serde_json = "*"
+sha2 = "*"
+sqlx = { version = "*", features = ["json", "macros", "migrate", "postgres", "runtime-tokio", "tls-rustls", "time", "uuid"] }
+time = { version = "*", features = ["serde", "serde-human-readable"] }
+tokio = { version = "*", features = ["full"] }
+tower = "*"
+tower-http = { version = "*", features = ["compression-full", "cors", "trace"] }
+tracing = "*"
+tracing-subscriber = { version = "*", features = ["env-filter"] }
+uuid = { version = "*", features = ["serde", "v4"] }
+yup-oauth2 = { version = "*", features = ["service-account", "hyper-rustls"] }
+
+[profile.release]
+codegen-units = 1
+debug = 0
+incremental = false
+lto = true
+opt-level = "z"
+overflow-checks = false
+panic = "abort"
+strip = "debuginfo"
+
+[dev-dependencies]
+axum = { version = "*", features = ["macros"] }
+http-body-util = "*"
+serde_json = "*"
+tower = { version = "*", features = ["util"] }
+
+[[test]]
+name = "basic_test"
+path = "tests/basic_test.rs"
+
+[[test]]
+name = "follow_test"
+path = "tests/follow_test.rs"

@@ -1,0 +1,49 @@
+# =====================
+# Rust
+# =====================
+target/
+**/*.rs.bk
+Cargo.lock
+
+# =====================
+# Svelte / Vite
+# =====================
+.svelte-kit/
+dist/
+dist-ssr/
+build/
+vite.config.ts.timestamp-*
+
+# =====================
+# Node
+# =====================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+
+# =====================
+# Environment / secrets
+# =====================
+.env
+.env.*
+!.env.example
+google-cloud.json
+service-account*.json
+
+# =====================
+# IDEs
+# =====================
+.vscode/
+.zed/
+
+# =====================
+# Misc OS / editor noise
+# =====================
+.DS_Store
+*.log*
+*~
+.#*
+*.sw?
+*.pdb

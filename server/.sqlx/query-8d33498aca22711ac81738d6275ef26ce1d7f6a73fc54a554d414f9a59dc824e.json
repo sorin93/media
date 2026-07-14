@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        WITH soft_deleted AS (\n            UPDATE comment\n            SET status = 'deleted', updated_at = now()\n            WHERE comment_id = $3\n              AND media_id = $2\n              AND status = 'active'\n              AND (from_user_id = $1 OR to_user_id = $1)\n            RETURNING 1\n        ),\n        media_updated AS (\n            UPDATE media\n            SET comment_count = GREATEST(comment_count - 1, 0)\n            WHERE media_id = $2\n              AND status = 'active'\n              AND EXISTS (SELECT 1 FROM soft_deleted)\n        )\n        SELECT 1 as id FROM soft_deleted\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "8d33498aca22711ac81738d6275ef26ce1d7f6a73fc54a554d414f9a59dc824e"
+}

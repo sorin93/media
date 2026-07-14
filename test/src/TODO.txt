@@ -1,0 +1,4 @@
+todo:
+- bug: /logout after token expiration => "token has expired". server side bug. gemini messes up fixing the issue.
+- combine { comments[], replies[] } under comments[{ user{}, media_id, created_at, type:comment|media, text, media{} }]
+- add to history
