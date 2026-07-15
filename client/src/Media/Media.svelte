@@ -351,8 +351,9 @@
   let result = $state.raw({});
   let status = $state.raw();
   let timestamp = $state.raw();
-  let tab = $state.raw();
-  let tabs = $state.raw([]);
+  let tab = $state.raw(); // Currently selected tab.
+  let tabs = $state.raw([]); // Available tabs for the current route and context.
+  let context = $state.raw(); // Active media context; set by update() for non-/m/ routes.
 
   // step
   const step = dir => {
@@ -378,13 +379,6 @@
     if (result?.index > 0 && e.deltaY < -50) step(-1);
     if (result?.index < result?.media?.length - 1 && e.deltaY > 50) step(1);
   };
-
-  // Get data
-  /*
-    id is always path[2] (user_id or media_id)
-
-
-  */
 
   const getData = async more => {
     if (status === 'loading' || !tab) return;
@@ -458,88 +452,42 @@
     }
   };
 
-  // init2
-  /*
-  const init2 = newTab => {
-    let [, type, id] = store.url?.pathname?.split('/') ?? [];
-    if (type === 'search') id = decodeURIComponent(id);
-    tabs = type === 'explore' || type === 'following' ? [type] :
-      type === 'search' ? [`search:${id}`] :
-      type === 'u' ? [`user_media:${id}`, `user_comments:${id}`, `user_likes:${id}`] :
-      type === 'm' ? [`media_suggestions:${id}`, `media_comments:${id}`, `user_media:${id}`] : [];
-    if (!tabs.length) return;
-    const trail = window.history.state?.trail ?? [];
-    tab = tabs.includes(newTab) ? newTab : tabs.includes(trail.at(-1)) ? trail.at(-1) : tabs[0];
-    window.history.replaceState({ ...window.history.state, trail: [...trail.slice(0, -1), tab] }, '', window.location.href);
-    getData();
-  };
-  */
-
-  // never do <a href="..." data-tab={tab}>, which basically says set new tab to current tab, simply pass <a href="...">
-  // only pass <a href="..." data-tab={new_tab}> when i change the active tab
-
-  // init
-  const init = () => {
+  // update
+  const update = () => {
     status = undefined;
     if (store.url.tab) tab = store.url.tab;
     const [, type, id] = location.pathname?.split('/') ?? [];
-    if (type === 'explore' || type === 'following') tabs = [`/${type}:`];
-    if (type === 's') tabs = [`/s/${id}:`];
-    if (type === 'u') tabs = [`/u/${id}:user_media`, `/u/${id}:user_comments`, `/u/${id}:user_likes`];
-    if (type === 'm') {
-      tabs = [`/m/${id}:media_suggestions`, `/m/${id}:media_comments`, `/m/${id}:user_media`];
-      if (tab && !tabs.includes(tab) && tab.slice(0, 3) !== '/m/') tabs.unshift(tab);
+    if (type === 'explore' || type === 'following') {
+      context = `/${type}`;
+      tabs = [`/${type}:`];
+    } else if (type === 's') {
+      context = `/s/${id}`;
+      tabs = [`/s/${id}:`];
+    } else if (type === 'u') {
+      context = `/u/${id}`;
+      tabs = [
+        `/u/${id}:user_media`,
+        `/u/${id}:user_comments`,
+        `/u/${id}:user_likes`
+      ];
+    } else if (type === 'm') {
+      tabs = [
+        `/m/${id}:media_suggestions`,
+        `/m/${id}:media_comments`
+      ];
+      if (context?.startsWith('/u/')) tabs.push(`/m/${id}:user_media`);
     }
-    if (!tab) tab = tabs[0];
-    console.log(tab, tabs);
-    getData();
-
-    /*
-    // associate the current pathname with the contextual object i'm coming from (media, user, explore, etc.), as a tab
-    if (location.pathname !== tab?.split(':')?.[0]) store.tabs.set(location.pathname, tab);
-
-    // compose current[] tabs based on new pathname
-    let [, type, id] = location.pathname?.split('/') ?? [];
-    const current = type === 'explore' || type === 'following' ? [`/${type}:`] :
-      type === 's' ? [`/s/${id}:`] :
-      type === 'u' ? [`/u/${id}:user_media`, `/u/${id}:user_comments`, `/u/${id}:user_likes`] :
-      type === 'm' ? [`/m/${id}:media_suggestions`, `/m/${id}:media_comments`, `/m/${id}:user_media`] : [];
-    if (!current.length) return;
-
-    // compose parent tab
-    let parent = store.tabs.get(location.pathname);
-    let grandparent = store.tabs.get(parent?.split(':')?.[0]);
-    if (parent?.split(':')?.[0] === current?.[0]?.split(':')?.[0]) {
-      // todo: specifically for type
-      parent = grandparent;
-      grandparent = undefined;
-    }
-
-    // compose grandparent tab
-    if (grandparent?.split(':')?.[0] === parent?.[0]?.split(':')?.[0]) {
-      // todo: specifically for type
-      grandparent = undefined;
-    }
-
-    tabs = [grandparent, parent, current];
-
-    // new current tab
-    if (store.url.tab) tab = store.url.tab; // new set tab
-    if (!tab || (!current.includes(tab) && tab !== parent && tab !== grandparent)) tab = current[0]; // default if invalid tab
-
-    if (tabs[0]) console.log('grandparent', tabs[0]);
-    if (tabs[1]) console.log('parent', tabs[1]);
-    console.log('current');
-    if (tabs[2][0]) console.log('   ', tabs[2][0]);
-    if (tabs[2][1]) console.log('   ', tabs[2][1]);
-    if (tabs[2][2]) console.log('   ', tabs[2][2]);
+    if (!tabs.includes(tab)) tab = tabs[0];
+    console.log('UPDATE');
+    console.log('tabs', tabs);
     console.log('tab', tab);
-    */
+    console.log('context', context);
+    getData();
   };
 
   // Track store.url
   $effect(() => {
     store.url;
-    untrack(init);
+    untrack(update);
   });
 </script>

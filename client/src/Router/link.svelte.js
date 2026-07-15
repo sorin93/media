@@ -8,23 +8,33 @@ export default node => {
     try {
       const url = new URL(href, location.origin);
       if (url.origin !== location.origin) return;
-			e.preventDefault();      
-      url.tab = node.dataset.tab; // add new tab parameter to url, only used be store.url.tab
-			store.url = url; // triggers parent $effect which calls init()
+			e.preventDefault();
+			url.tab = node.dataset.tab; // transient tab state, consumed through store.url.tab
+      store.url = url; // triggers update(); must happen before handling same-path tab changes
       if (url.pathname === location.pathname) {
-          // in the same page, when tab changes, reset vertical scroll
+          // same page: tab change only, reset vertical scroll
           if (node.dataset.tab) scrollTo({ top: 0, left: 0, behavior: 'instant' });
           return;
       }
-      history.replaceState({
-        ...history.state,
-        pathname: window.location.pathname,
-        scrollY: scrollY,
-      }, '', location.href);      
-      history.pushState({
-        pathname: url.pathname,
-        scrollY: 0,
-      }, '', url);
+      const replace = node.dataset.replace !== undefined;
+      if (replace) {
+        history.replaceState({
+          pathname: url.pathname,
+          scrollY: 0,
+        }, '', url);
+      } else {
+        history.replaceState({
+          ...history.state,
+          pathname: window.location.pathname,
+          scrollY: scrollY,
+        }, '', location.href);
+
+        history.pushState({
+          ...history.state,
+          pathname: url.pathname,
+          scrollY: 0,
+        }, '', url);
+      }
 			scrollTo({ top: 0, left: 0, behavior: 'instant' });
     } catch (_) {}
   };
