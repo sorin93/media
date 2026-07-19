@@ -3,12 +3,9 @@ use sqlx::{PgPool, query, query_as};
 use uuid::Uuid;
 
 use crate::error::Result;
-use crate::models::media::{Media, MediaType, MediaRow};
+use crate::models::media::{Media, MediaRow, MediaType};
 
-pub async fn find_by_id(
-    pool: &PgPool,
-    media_id: Uuid,
-) -> Result<Media> {
+pub async fn find_by_id(pool: &PgPool, media_id: Uuid) -> Result<Media> {
     let media = query_as::<_, MediaRow>(
         r#"
         SELECT
@@ -27,11 +24,7 @@ pub async fn find_by_id(
     Ok(media.into())
 }
 
-pub async fn user_media(
-    pool: &PgPool,
-    user_id: Uuid,
-    page: i16,
-) -> Result<Vec<Media>> {
+pub async fn user_media(pool: &PgPool, user_id: Uuid, page: i16) -> Result<Vec<Media>> {
     let media = query_as::<_, MediaRow>(
         r#"
         SELECT
@@ -57,11 +50,7 @@ pub async fn user_media(
     Ok(media)
 }
 
-pub async fn user_replies(
-    pool: &PgPool,
-    user_id: Uuid,
-    page: i16,
-) -> Result<Vec<Media>> {
+pub async fn user_replies(pool: &PgPool, user_id: Uuid, page: i16) -> Result<Vec<Media>> {
     let media = query_as::<_, MediaRow>(
         r#"
         SELECT
@@ -88,11 +77,7 @@ pub async fn user_replies(
     Ok(media)
 }
 
-pub async fn media_replies(
-    pool: &PgPool,
-    media_id: Uuid,
-    page: i16,
-) -> Result<Vec<Media>> {
+pub async fn media_replies(pool: &PgPool, media_id: Uuid, page: i16) -> Result<Vec<Media>> {
     let media = query_as::<_, MediaRow>(
         r#"
         SELECT
@@ -118,11 +103,7 @@ pub async fn media_replies(
     Ok(media)
 }
 
-pub async fn list_user(
-    pool: &PgPool,
-    user_id: Uuid,
-    page: i16,
-) -> Result<Vec<Media>> {
+pub async fn list_user(pool: &PgPool, user_id: Uuid, page: i16) -> Result<Vec<Media>> {
     let media = query_as::<_, MediaRow>(
         r#"
         SELECT
@@ -148,11 +129,7 @@ pub async fn list_user(
     Ok(media)
 }
 
-pub async fn list_liked(
-    pool: &PgPool,
-    user_id: Uuid,
-    page: i16,
-) -> Result<Vec<Media>> {
+pub async fn list_liked(pool: &PgPool, user_id: Uuid, page: i16) -> Result<Vec<Media>> {
     let media = query_as::<_, MediaRow>(
         r#"
         SELECT
@@ -179,11 +156,7 @@ pub async fn list_liked(
     Ok(media)
 }
 
-pub async fn list_replied(
-    pool: &PgPool,
-    user_id: Uuid,
-    page: i16,
-) -> Result<Vec<Media>> {
+pub async fn list_replied(pool: &PgPool, user_id: Uuid, page: i16) -> Result<Vec<Media>> {
     let media = query_as::<_, MediaRow>(
         r#"
         SELECT
@@ -210,11 +183,7 @@ pub async fn list_replied(
     Ok(media)
 }
 
-pub async fn list_following(
-    pool: &PgPool,
-    user_id: Uuid,
-    page: i16,
-) -> Result<Vec<Media>> {
+pub async fn list_following(pool: &PgPool, user_id: Uuid, page: i16) -> Result<Vec<Media>> {
     let media = query_as::<_, MediaRow>(
         r#"
         SELECT
@@ -241,11 +210,7 @@ pub async fn list_following(
     Ok(media)
 }
 
-pub async fn list_similar_by_id(
-    pool: &PgPool,
-    media_id: Uuid,
-    page: i16,
-) -> Result<Vec<Media>> {
+pub async fn list_similar_by_id(pool: &PgPool, media_id: Uuid, page: i16) -> Result<Vec<Media>> {
     let limit = 100 + (page == 1) as i16;
     let media = query_as::<_, MediaRow>(
         r#"
@@ -258,14 +223,14 @@ pub async fn list_similar_by_id(
           AND u.status = 'active'
         ORDER BY
             subvector(m.embedding, 1, 768)::vector(768)
-            <=> 
+            <=>
             (SELECT subvector(embedding, 1, 768)::vector(768) FROM media WHERE media_id = $1)
         OFFSET $2
         LIMIT $3
         "#
     )
         .bind(media_id)
-        .bind((page - 1) * 100)
+        .bind((page - 1) * 100 + 1) // skip first entry
         .bind(limit)
         .fetch_all(pool)
         .await?
@@ -292,7 +257,7 @@ pub async fn list_similar_by_embedding(
           AND u.status = 'active'
         ORDER BY
             subvector(m.embedding, 1, 768)::vector(768)
-            <=> 
+            <=>
             subvector($1::vector, 1, 768)::vector(768)
         OFFSET $2
         LIMIT $3
@@ -309,11 +274,7 @@ pub async fn list_similar_by_embedding(
     Ok(media)
 }
 
-pub async fn list_replies(
-    pool: &PgPool,
-    media_id: Uuid,
-    page: i16,
-) -> Result<Vec<Media>> {
+pub async fn list_replies(pool: &PgPool, media_id: Uuid, page: i16) -> Result<Vec<Media>> {
     let media = query_as::<_, MediaRow>(
         r#"
         SELECT
@@ -339,10 +300,7 @@ pub async fn list_replies(
     Ok(media)
 }
 
-pub async fn list_explore(
-    pool: &PgPool,
-    page: i16,
-) -> Result<Vec<Media>> {
+pub async fn list_explore(pool: &PgPool, page: i16) -> Result<Vec<Media>> {
     let media = query_as::<_, MediaRow>(
         r#"
         SELECT
@@ -441,8 +399,8 @@ pub async fn list(
                 WHERE m.status = 'active'
               AND u.status = 'active'
                 ORDER BY (subvector(m.embedding, 1, 768)::vector(768)) <=> (
-                    SELECT subvector(avg(embedding)::vector, 1, 768)::vector(768) 
-                    FROM media 
+                    SELECT subvector(avg(embedding)::vector, 1, 768)::vector(768)
+                    FROM media
                     WHERE media_id = ANY($1)
                 )
                 OFFSET $2
@@ -532,12 +490,12 @@ pub async fn create(
         RETURNING media_id
         "#,
     )
-        .bind(user_id)
-        .bind(parent_media_id)
-        .bind(r#type)
-        .bind(caption)
-        .fetch_one(pool)
-        .await?;
+    .bind(user_id)
+    .bind(parent_media_id)
+    .bind(r#type)
+    .bind(caption)
+    .fetch_one(pool)
+    .await?;
     Ok(media_id)
 }
 
@@ -609,11 +567,7 @@ pub async fn update(
     Ok(result)
 }
 
-pub async fn remove(
-    pool: &PgPool,
-    user_id: Uuid,
-    media_id: Uuid,
-) -> Result<()> {
+pub async fn remove(pool: &PgPool, user_id: Uuid, media_id: Uuid) -> Result<()> {
     query!(
         r#"
         WITH updated_media AS (
@@ -624,11 +578,11 @@ pub async fn remove(
         ),
         updated_user AS (
             UPDATE "user"
-            SET 
+            SET
                 updated_at = now(),
                 media_count = GREATEST(media_count - 1, 0),
                 media_id = CASE WHEN media_id = $2 THEN NULL ELSE media_id END
-            WHERE user_id = $1 
+            WHERE user_id = $1
               AND status = 'active'
               AND EXISTS (SELECT 1 FROM updated_media)
             RETURNING 1
@@ -638,7 +592,7 @@ pub async fn remove(
         user_id,
         media_id
     )
-        .fetch_one(pool)
-        .await?;
+    .fetch_one(pool)
+    .await?;
     Ok(())
 }

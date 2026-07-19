@@ -1,0 +1,405 @@
+:root {
+    --text-normal: 16px;
+
+    /* Light Theme */
+    --bg-primary: #ffffff;
+    --bg-secondary: #f5f5f5;
+    --text-primary: #1a1a1a;
+    --text-secondary: #555555;
+    --accent: #3b82f6;
+    --border: #e0e0e0;
+    --link: #3b82f6;
+}
+
+[data-theme="dark"] {
+    --bg-primary: #1a1a1a;
+    --bg-secondary: #2d2d2d;
+    --text-primary: #f5f5f5;
+    --text-secondary: #aaaaaa;
+    --accent: #60a5fa;
+    --border: #444444;
+    --link: #60a5fa;
+}
+
+/**********************************************************************************************************************/
+
+html {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: Arial, Helvetica, san-serif;
+    font-size: var(--text-normal);
+    font-synthesis: position small-caps style weight;
+    scroll-behavior: smooth;
+    scrollbar-gutter: stable;
+    text-rendering: optimizeLegibility;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;
+}
+
+body {
+    box-sizing: border-box;
+    margin: 0;
+    min-width: 320px;
+}
+
+/**********************************************************************************************************************/
+
+a {
+    color: var(--link);
+}
+address {
+    font-style: normal;
+}
+
+a.reset {
+    /* color: inherit; */
+    outline: none;
+    text-decoration: none;
+}
+h1.reset {
+    font: inherit;
+    margin: 0;
+}
+ul.reset,
+li.reset {
+    margin: 0;
+    padding: 0;
+}
+ul.reset {
+    list-style: none;
+}
+li.reset:not(.flex):not(.flex-col):not(.grid) {
+    display: block;
+}
+
+.accent {
+    color: var(--accent);
+}
+.bg-secondary {
+    background-color: var(--bg-secondary);
+}
+.bg-primary {
+    background-color: var(--bg-primary);
+}
+.border {
+    border-color: var(--border);
+}
+.text-secondary {
+    color: var(--text-secondary);
+}
+.text-primary {
+    color: var(--text-primary);
+}
+
+.absolute {
+    position: absolute;
+}
+.align-center {
+    align-items: center;
+}
+.align-flex-start {
+    align-items: flex-start;
+}
+.align-justify-center {
+    align-items: center;
+    justify-content: center;
+}
+.bold {
+    font-weight: bold;
+}
+.border {
+    border: 1px solid var(--border);
+}
+.flex {
+    display: flex;
+}
+.flex-col {
+    display: flex;
+    flex-direction: column;
+}
+.flex-grow {
+    flex: 1 1 0; /* flex-grow: 1, flex-shrink: 1, flex-basis: 0 */
+    min-height: 0; /* for flex-direction: column  */
+    min-width: 0; /* flex-direction: row  */
+}
+.flex-wrap {
+    flex-wrap: wrap;
+}
+.gap-4 {
+    gap: 4px;
+}
+.gap-8 {
+    gap: 8px;
+}
+.gap-16 {
+    gap: 16px;
+}
+.inline-flex {
+    display: inline-flex;
+}
+.justify-end {
+    justify-content: flex-end;
+}
+.no-br {
+    white-space: nowrap;
+}
+.padding-8 {
+    padding: 8px;
+}
+.padding-16 {
+    padding: 16px;
+}
+.pointer {
+    cursor: pointer;
+}
+.no-touch-action {
+    touch-action: none;
+}
+.white {
+    color: white;
+}
+
+.layout,
+.layout-margin {
+    --gap: 0px;
+    box-sizing: border-box;
+    margin-inline: auto;
+    overflow: hidden;
+    width: min(1280px, calc(100% - var(--gap)));
+}
+
+.layout-margin {
+    --gap: 16px;
+}
+
+/** TODO **************************************************************************************************************/
+/* a img { display: block } /* replace with vertical-align: middle; if you want */
+/*
+h1 {
+  font-size: 32px;
+  font-weight: normal;
+}*/
+.inline-flex-col {
+    display: inline-flex;
+    flex-direction: column;
+}
+
+/**********************************************************************************************************************/
+
+.label {
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+}
+.label:hover:active {
+    background-color: var(--blue-3);
+}
+.label:hover {
+    background-color: var(--blue-4);
+}
+
+/**********************************************************************************************************************/
+
+.loading {
+    display: block;
+    height: 64px;
+    _margin: auto;
+    width: 64px;
+}
+
+.loading:after {
+    animation: loading 1.2s linear infinite;
+    border: 8px solid white;
+    border-color: var(--gray-3) transparent var(--gray-3) transparent;
+    border-radius: 50%;
+    content: "";
+    display: block;
+    height: 64px;
+    _margin: 1px;
+    width: 64px;
+}
+
+@keyframes loading {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.refresh {
+    background-color: #88888888;
+    border-radius: 64px;
+    color: white;
+    cursor: pointer;
+    fill: white;
+    padding: 16px;
+    pointer-events: auto;
+}
+
+/**********************************************************************************************************************/
+
+.textarea {
+    background-color: inherit;
+    border: 0;
+    box-sizing: border-box;
+    color: var(--gray-1);
+    font-family: inherit;
+    font-size: inherit;
+    height: auto;
+    line-height: inherit;
+    outline: 0;
+    overflow-y: hidden;
+    padding: 8px;
+    resize: none;
+    width: 100%;
+}
+.textarea::placeholder {
+    color: var(--gray-3);
+}
+
+/**********************************************************************************************************************/
+/* Buttons */
+
+.button-blue,
+.button-white,
+.button-red {
+    border: 0;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    min-width: 80px;
+    outline: 0;
+    padding: 12px 16px;
+}
+
+.button-blue {
+    background-color: var(--blue-1);
+    color: white;
+}
+.button-blue:hover:active {
+    background-color: #0053c8;
+}
+.button-blue:hover {
+    background-color: #0a63d8;
+}
+
+.button-white {
+    background-color: transparent;
+    color: var(--blue-1);
+}
+.button-white:hover:active {
+    background-color: var(--blue-3);
+}
+.button-white:hover {
+    background-color: var(--blue-4);
+}
+
+.button-red {
+    background-color: white;
+    color: var(--red-2);
+}
+.button-red:hover:active {
+    background-color: #ffe0e0;
+}
+.button-red:hover {
+    background-color: #fff4f4;
+}
+
+.button-rectangle {
+    background-color: transparent;
+    border: 0;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    padding: 4px 8px;
+}
+
+.button-rectangle:hover {
+    background-color: #00000022;
+}
+
+.button-div {
+    background-color: transparent;
+    border: 0;
+    cursor: pointer;
+}
+
+.input-1 {
+    background-color: transparent;
+    border: 1px solid var(--gray-3);
+    border-radius: 4px;
+    box-sizing: border-box;
+    color: black; /* to avoid graying out when disabled="true" */
+    _font-family: inherit;
+    font-size: 16px;
+    height: auto;
+    line-height: 1.5;
+    overflow: hidden;
+    padding: 12px 16px;
+    resize: none;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+.input-1:current {
+    background-color: var(--blue-1);
+}
+@media screen and (max-width: 600px) {
+    .input-1 {
+        width: 100%;
+    }
+}
+
+/**********************************************************************************************************************/
+
+/**********************************************************************************************************************/
+
+.input {
+    background: white;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 1rem;
+    height: 3rem;
+    outline: none;
+    padding: 0.5rem;
+    transition: border 0.2s ease;
+    width: 100%;
+}
+
+.input-wrapper {
+    font-family: sans-serif;
+    _margin-bottom: 0.5rem;
+    max-width: 100%;
+    position: relative;
+    _width: fit-content; /* todo */
+}
+
+.input:focus {
+    border-color: #1a73e8;
+}
+
+.input-label {
+    background: white;
+    color: #666;
+    font-size: 1rem;
+    left: 0.5rem;
+    padding: 0 0.25rem;
+    pointer-events: none;
+    position: absolute;
+    top: 0.8rem;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+}
+
+.input-floating {
+    color: #1a73e8;
+    font-size: 0.75rem;
+    top: -0.6rem;
+}

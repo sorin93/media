@@ -8,8 +8,6 @@ function createStore() {
   let
     cache = $state.raw(new Map()), // { expiry, value }
     displayTheme = $state('light'),
-    enlarged = $state.raw(),
-    feed = $state([]),
     isMobile = $state(true),
     route = $state(),
     tabs = $state.raw(new Map()),
@@ -73,10 +71,6 @@ function createStore() {
 		  });
   		return value;
     },
-    get enlarged() { return enlarged },
-    set enlarged(value) { enlarged = value },
-    get feed() { return feed },
-    set feed(value) { feed = value },
     get isMobile() { return isMobile },
     get route() { return route },
     set route(value) { route = value },
