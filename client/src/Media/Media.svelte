@@ -2,50 +2,71 @@
 
 <!-- Player -->
 {#snippet player()}
-  <!-- Player -->
-  {#key result.index}
-    <img
-      alt={result.media[result.index].caption || ''}
-      class="image"
-      draggable="false"
-      {onwheel}
-      src={getImageUrl(result.media[result.index].media_id, 'large')}
-      style="background: url({getImageUrl(result.media[result.index].media_id, 'medium')}) center / cover no-repeat;"
-    />
-  {/key}
+  {#if store.enlarged?.media}
 
-  <!-- Overlay -->
-  <div class="overlay">
+    <!-- Player -->
+    {#key store.enlarged.media}
+      <div class="image-container">
+        <img
+          alt={store.enlarged.media.caption || ''}
+          class="image"
+          draggable="false"
+          {onwheel}
+          src={getImageUrl(store.enlarged.media.media_id, 'large')}
+          style="background: url({getImageUrl(store.enlarged.media.media_id, 'medium')}) center / cover no-repeat;"
+        />
+      </div>
+    {/key}
+
+    <!-- Overlay -->
+    <div class="overlay">
+
+      <!-- User pic and name -->
+      {#if store.isMobile}
+        <address class="align-center flex gap-4">
+          <UserPic size={32} user={store.enlarged.media.user} />
+          <div class="white">{store.enlarged.media.user?.name}</div>
+        </address>
+      {/if}
+
+      <!-- Caption -->
+      {#if store.enlarged.media.caption}
+        <h1 class="reset">{store.enlarged.media.caption}</h1>
+      {/if}
+    </div>
+
+
+    <!-- Prev -->
+    {#if prev()}
+      <!-- svelte-ignore a11y_consider_explicit_label -->
+      <a class="overlay-prev" href="." onclick={event => enlargeMedia(...prev(), event)}></a>
+    {/if}
+
+    <!-- Next -->
+    {#if next()}
+      <!-- svelte-ignore a11y_consider_explicit_label -->
+      <a class="overlay-next" href="." onclick={event => enlargeMedia(...next(), event)}></a>
+    {/if}
+
+    <!-- Close -->
     {#if store.isMobile}
-      <address class="align-center flex gap-4">
-        <UserPic size={32} user={result.media[result.index].user} />
-        <div class="white">{result.media[result.index].user?.name}</div>
-      </address>
+      <a class="close" href="." onclick={closeMedia}>
+        <Svg
+          aria-hidden="true"
+          class="pointer"
+          fill="var(--fill)"
+          name="close"
+          size="30px"
+        />
+      </a>
     {/if}
-    {#if result.media[result.index].caption}
-      <h1 class="reset">{result.media[result.index].caption}</h1>
-    {/if}
-  </div>
 
-  <!-- Prev -->
-  {#if result.index > 0}
-    <!-- svelte-ignore a11y_consider_explicit_label -->
-    <a class="overlay-prev" href="/m/{result.media[result.index - 1].media_id}" use:link></a>
-  {/if}
-
-  <!-- Next -->
-  {#if result.index < result.media.length - 1}
-    <!-- svelte-ignore a11y_consider_explicit_label -->
-    <a class="overlay-next" href="/m/{result.media[result.index + 1].media_id}" use:link></a>
-  {/if}
-
-  <!-- Side menu -->
-  {#if !store.isMobile}
+    <!-- Side menu -->
     <div class="actions">
 
       <!-- Prev -->
-      {#if result.index > 0}
-        <a href="/m/{result.media[result.index - 1].media_id}" use:link>
+      {#if prev()}
+        <a href="." onclick={event => enlargeMedia(...prev(), event)}>
           <Svg
             aria-hidden="true"
             class="pointer"
@@ -57,8 +78,8 @@
       {/if}
 
       <!-- Next -->
-      {#if result.index < result.media.length - 1}
-        <a href="/m/{result.media[result.index + 1].media_id}" use:link>
+      {#if next()}
+        <a href="." onclick={event => enlargeMedia(...next(), event)}>
           <Svg
             aria-hidden="true"
             class="pointer"
@@ -69,118 +90,89 @@
         </a>
       {/if}
 
-      <!-- User -->
-      <a
-        href="/u/{result.media[result.index].user?.user_id}"
-        data-tab="/u/{result.media[result.index].user?.user_id}:user_media"
-        use:link
-      >
-        <UserPic size={32} user={result.media[result.index].user} />
+
+      <!-- Similar media -->
+      <a href="." onclick={event => newContext(`/m/${store.enlarged?.media?.media_id}:media_suggestions`, event)}>
+        <Svg
+          aria-hidden="true"
+          class="pointer"
+          fill="var(--fill)"
+          name="grid_view"
+          size="30px"
+        />
+      </a>
+
+      <!-- From user -->
+      <a href="." onclick={event => newContext(`/u/${store.enlarged?.media?.user?.user_id}:user_media`, event)}>
+        <UserPic size={32} user={store.enlarged.media.user} />
       </a>
 
     </div>
+
   {/if}
 
 {/snippet}
 
-<!-- Loader -->
-{#if status === 'loading'}
-  <div class="loading"></div>
-{:else}
+<!-- Message -->
+{#if false && status && status !== 'loading'}<Message message={status} type="error" />{/if}
 
-  <!-- Message -->
-  {#if status}<Message message={status} type="error" />{/if}
+<!-- Wrapper -->
+<div class="wrapper">
+  {#if store.isMobile}
 
-  <!-- Wrapper -->
-  <div class="wrapper">
-    {#if store.isMobile}
+    <!-- Small -->
+    <div class="center-small">
+      <Feed {closeContext} {enlargeMedia} {newContext} />
+    </div>
 
-      <!-- Small -->
-      <div class="center-small">
+    <!-- Media -->
+    {#if store.enlarged}
+      <main>
+        <article class="media-small">
+          {@render player()}
+        </article>
+      </main>
+    {/if}
 
-        {#if result?.media?.[result.index]}
-
-          <!-- Media -->
-          <main>
-            <article class="media-small">
-              {@render player()}
-            </article>
-          </main>
-
-          <Tabs {tab} {tabs} />
-
-          {#if result?.media?.length}
-            <List {result} {tab} enlarged={result?.index >= 0} />
-          {/if}
-
-        {:else}
-
-          <Header {tab} {result} />
-          <!--{#if result?.user}-->
-            <Tabs {tab} {tabs} />
-          <!--{/if}-->
-
-          {#if result?.media?.length}
-            <List {result} {tab} enlarged={result?.index >= 0} />
-          {/if}
-
-        {/if}
-
-
-      </div>
-
+    {#if !store.enlarged}
       <Navigation />
+    {/if}
+
+  {:else}
+
+    <!-- Large -->
+    <Navigation />
+
+    <!-- Media -->
+    {#if store.enlarged?.media}
+
+      <!-- Center -->
+      <main class="center-media">
+        <article class="media-large">
+          {@render player()}
+        </article>
+      </main>
+
+      <!-- Right -->
+      <aside>
+        <Feed {closeContext} {enlargeMedia} {newContext} />
+      </aside>
 
     {:else}
 
-      <!-- Large -->
-      <Navigation />
-
-      <!-- Media -->
-      {#if result?.media?.[result.index]}
-
-        <!-- Center -->
-        <main class="center-media">
-          <article class="media-large">
-            {@render player()}
-          </article>
-        </main>
-
-        <!-- Right -->
-        <aside>
-
-          <User user={result.media[result.index]?.user} />
-          <div class="sticky">
-            <Tabs {tab} {tabs} />
-          </div>
-
-          {#if result?.media?.length}
-            <List {result} {tab} enlarged={result?.index >= 0} />
-          {/if}
-
-        </aside>
-
-      {:else}
-
-        <!-- Center -->
-        <div class="center-large">
-
-          <Header {tab} {result} />
-          <!--{#if result?.user}-->
-            <Tabs {tab} {tabs} />
-          <!--{/if}-->
-
-          {#if result?.media?.length}
-            <List {result} {tab} enlarged={result?.index >= 0} />
-          {/if}
-
-        </div>
-
-      {/if}
+      <!-- Center -->
+      <div class="center-large">
+        <Feed {closeContext} {enlargeMedia} {newContext} />
+      </div>
 
     {/if}
-  </div>
 
+  {/if}
+</div>
+
+<!-- Loader -->
+{#if false && status === 'loading'}
+  <div class="loading"></div>
 {/if}
 
 <style>
@@ -192,17 +184,6 @@
     gap: var(--gap);
     margin-left: var(--nav-width);
     overflow: hidden;
-  }
-  @media (min-width: 1024px) {
-    .wrapper {
-      --gap: 16px;
-      --nav-width: 66px; /* 50 + 16 */
-    }
-  }
-  @media (min-width: 1200px) {
-    .wrapper {
-      --nav-width: 216px; /* 200 + 16 */
-    }
   }
 
   .center-small,
@@ -248,31 +229,54 @@
     overflow-y: auto;
   }
 
-  .media-small,
-  .media-large {
+  .media-large,
+  .image-container {
     aspect-ratio: 9 / 16;
     box-sizing: border-box;
-    _overflow: hidden;
     position: relative;
   }
 
   .media-small {
-    max-height: 90dvh;
-    width: 100%;
+    align-items: center;
+    background-color: var(--bg-primary);
+    display: flex;
+    inset:0;
+    justify-content: center;
+    position: fixed;
   }
 
   .media-large {
-    border-radius: 16px;
     flex: 0 0 auto;
     height: auto;
+    _overflow: hidden;
     width: min(100%, calc((100dvh - 32px) * 9 / 16));
+  }
+
+  .image-container {
+    border-radius: 16px;
+    height: 100%;
+    width: 100%;
   }
 
   .image {
     display: block;
     height: 100%;
-    object-fit: cover;
-    object-position: center;
+    object-fit: contain;
+    width: 100%;
+  }
+
+  .media-small .image-container {
+    align-items: center;
+    aspect-ratio: 9 / 16;
+    display: flex;
+    height: auto;
+    justify-content: center;
+    width: min(100%, calc(100dvh * 9 / 16));
+  }
+
+  .media-small .image {
+    height: 100%;
+    object-fit: contain;
     width: 100%;
   }
 
@@ -303,14 +307,14 @@
   .overlay-prev { top: 0 }
   .overlay-next { bottom: 0 }
 
-  .sticky {
-    background: inherit;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    position: sticky;
-    top: 0;
-    z-index: 10;
+  .close {
+    --fill: white;
+    background: #00000066;
+    border-radius: 64px;
+    left: 16px;
+    padding: 8px;
+    position: absolute;
+    top: 16px;
   }
 
   .actions {
@@ -322,6 +326,23 @@
     position: absolute;
     right: 16px;
   }
+
+  @media (min-width: 1024px) {
+    .wrapper {
+      --gap: 16px;
+      --nav-width: 66px; /* 50 + 16 */
+    }
+    .image-container {
+      overflow: hidden;
+    }
+  }
+
+  @media (min-width: 1200px) {
+    .wrapper {
+      --nav-width: 216px; /* 200 + 16 */
+    }
+  }
+
   @media (min-width: 1600px) {
     .actions {
       --fill: var(--text-primary);
@@ -333,13 +354,12 @@
 </style>
 
 <script>
-  import { untrack } from 'svelte';
+  import { untrack, settled } from 'svelte';
+  import Feed from './Feed.svelte';
   import Header from './Header.svelte';
-  import List from './List.svelte';
   import Message from '../Misc/Message.svelte';
   import Navigation from './Navigation.svelte';
   import Svg from '../Svg/Svg.svelte';
-  import Tabs from './Tabs.svelte';
   import User from './User.svelte';
   import UserPic from '../User/UserPic.svelte';
   import fetchApi from '../lib/fetchApi.svelte';
@@ -383,10 +403,12 @@
   const getData = async more => {
     if (status === 'loading' || !tab) return;
     // Cache
-    const cache = store.getCache(tab);
-    const offset = cache?.media?.length ?? 0;
+    // const cache = store.getCache(tab);
+    // const offset = cache?.media?.length ?? 0;
+    const offset = 0;
     const path = store.url?.pathname?.split('/');
     // todo: subject is deprecated
+    /*
     let subject = window.history.state?.subject;
     if (offset && !more) {
       try {
@@ -404,11 +426,12 @@
 
       return;
     }
+    */
     // Api
     try {
       status = 'loading';
       let res;
-      const payload = { page: more ? Math.floor(offset / 100) + 1 : 1 };
+      const payload = more ? { page: Math.floor(offset / 100) + 1 } : { expand: true };
       if (tab === '/explore:') {
         res = await fetchApi('get', '/explore', payload);
       } else if (tab === '/following:') {
@@ -430,20 +453,28 @@
           res = await fetchApi('get', tab.replace('/m/', '/media/').replace(':media_', '/'), payload);
         }
       } else throw 'Error';
+      /*
       if (more) {
         // todo
       } else {
         result = { ...store.setCache(tab, res, more) };
       }
       console.log(result);
+      */
 
-
-      const target = store.url?.pathname?.slice(0, 3) === '/m/' ? store.url?.pathname.slice(3) : undefined;
-      const index = result?.media?.findIndex(m => m.media_id === target); // todo: deprecate
-      if (index >= 0) result.index = index;  // todo: deprecate
-
-      if (target) {
-        // todo: if target object is in the current list get it from there, otherwise fetch it from the cache or the api
+      const subject = res.subject;
+      if (store.enlarged) {
+        const { contextIndex, mediaIndex } = store.enlarged;
+        // const exclude = new Set(store.feed[contextIndex].media.map(item => item.media_id));
+        const exclude = new Set();
+        const media = res.media.filter(it => !exclude.has(it.media_id));
+        if (media.length) {
+          store.feed[contextIndex].media = store.feed[contextIndex].media.slice(0, mediaIndex + 1);
+          store.feed = [ ...store.feed.slice(0, contextIndex + 1), { tab, subject, media }];
+        }
+      } else {
+        const media = res.media;
+        store.feed = [{ tab, subject, media }];
       }
 
       status = undefined;
@@ -458,13 +489,13 @@
     if (store.url.tab) tab = store.url.tab;
     const [, type, id] = location.pathname?.split('/') ?? [];
     if (type === 'explore' || type === 'following') {
-      context = `/${type}`;
+      context = `/${type}:`;
       tabs = [`/${type}:`];
     } else if (type === 's') {
-      context = `/s/${id}`;
+      context = `/s/${id}:`;
       tabs = [`/s/${id}:`];
     } else if (type === 'u') {
-      context = `/u/${id}`;
+      context = `/u/${id}:user_media`;
       tabs = [
         `/u/${id}:user_media`,
         `/u/${id}:user_comments`,
@@ -475,14 +506,69 @@
         `/m/${id}:media_suggestions`,
         `/m/${id}:media_comments`
       ];
-      if (context?.startsWith('/u/')) tabs.push(`/m/${id}:user_media`);
+      // if (context?.startsWith('/u/')) tabs.push(`/m/${id}:user_media`);
+      if (context && !tabs.includes(context)) tabs.push(context);
     }
     if (!tabs.includes(tab)) tab = tabs[0];
-    console.log('UPDATE');
-    console.log('tabs', tabs);
-    console.log('tab', tab);
-    console.log('context', context);
     getData();
+  };
+
+  const enlargeMedia = (contextIndex, mediaIndex, event) => {
+    event?.preventDefault();
+    const element = document.getElementById(`${contextIndex}:${mediaIndex}`);
+    if (!element) return;
+    const rect = element.getBoundingClientRect();
+    const scrollY = rect?.bottom;
+    const media = store.feed[contextIndex]?.media?.[mediaIndex];
+    store.enlarged = { contextIndex, mediaIndex, scrollY, media };
+  };
+
+  const closeMedia = e => {
+    e?.preventDefault();
+    e?.stopPropagation();
+    store.enlarged = undefined;
+  };
+
+  const closeContext = async (contextIndex, event) => {
+    event?.preventDefault();
+    tab = store.feed[contextIndex]?.tab;
+    if (!contextIndex || !tab) return;
+    await getData(true);
+    // todo: scrollY
+    await settled();
+    // todo: scrollY
+  };
+
+  const newContext = async (context, event) => {
+    event?.preventDefault();
+    // Context didn't change
+    if (context === store.feed[store.enlarged?.contextIndex]?.tab) {
+      store.enlarged = undefined;
+      return;
+    }
+    tab = context;
+    await getData();
+    const scrollY = store.enlarged?.scrollY;
+    if (store.isMobile) store.enlarged = undefined;
+    await settled();
+    const scroller = document.querySelector('aside') ?? window;
+    if (scrollY) scroller.scrollBy({ top: scrollY, behavior: 'smooth' });
+  };
+
+  const prev = () => {
+    const { contextIndex, mediaIndex } = store.enlarged;
+    if (mediaIndex > 0) return [contextIndex, mediaIndex - 1];
+    for (let i = contextIndex - 1; i >= 0; i--) {
+      if (store.feed[i].media.length > 0) return [i, store.feed[i].media.length - 1];
+    }
+  };
+
+  const next = () => {
+    const { contextIndex, mediaIndex } = store.enlarged;
+    if (mediaIndex + 1 < store.feed[contextIndex].media.length) return [contextIndex, mediaIndex + 1];
+    for (let i = contextIndex + 1; i < store.feed.length; i++) {
+      if (store.feed[i].media.length > 0) return [i, 0];
+    }
   };
 
   // Track store.url

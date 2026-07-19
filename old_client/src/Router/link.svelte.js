@@ -13,7 +13,7 @@ export default node => {
       store.url = url; // triggers update(); must happen before handling same-path tab changes
       if (url.pathname === location.pathname) {
           // same page: tab change only, reset vertical scroll
-          if (node.dataset.tab) window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+          if (node.dataset.tab) scrollTo({ top: 0, left: 0, behavior: 'instant' });
           return;
       }
       const replace = node.dataset.replace !== undefined;
@@ -35,7 +35,7 @@ export default node => {
           scrollY: 0,
         }, '', url);
       }
-			window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+			scrollTo({ top: 0, left: 0, behavior: 'instant' });
     } catch (_) {}
   };
   node.addEventListener('click', click);

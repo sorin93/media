@@ -6,7 +6,7 @@
         <a
           class="reset"
           href="/s/{encodeURIComponent(it)}"
-          data-tab="/s/{it}:"
+          data-tab="/s/{encodeURIComponent(it)}:"
           use:link
         >{it}</a>
       </li>
@@ -15,7 +15,7 @@
 {/if}
 
 <!-- Suggested Media -->
-<ul class="grid reset{enlarged && result?.media && !store.isMobile ? ' aside' : ''}">
+<ul class="grid reset{result?.media && !store.isMobile ? ' aside' : ''}">
   {#each result?.media || [] as it, i (it.media_id)}
 
     <!-- Item -->
@@ -188,8 +188,6 @@
   import store from '../lib/store.svelte';
 
   const {
-    enlarged = false,
     result = undefined,
-    tab = undefined,
   } = $props();
 </script>
